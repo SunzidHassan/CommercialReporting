@@ -18,11 +18,11 @@ library(data.table)
 
 commercialInfo <- read_sheet("https://docs.google.com/spreadsheets/d/1JrT1sy5QGvSR6GaYiVEn2WrCS6y72ke0sJnYaw-VYAg",
                              range = "Updated Sellers List!A:K", col_names = T, na = "") %>%
-                    select(c("Shop Name", "Mother Company", "KAM Name", "BDM Name",
-                             "Category Head /Team Lead Name", "Category")) %>%
-                    dplyr::rename(ShopName = 'Shop Name', MotherCompany = 'Mother Company',
-                                  KAM = 'KAM Name', BDM = 'BDM Name',
-                                  CatHead = "Category Head /Team Lead Name")
+     select(c("Shop Name", "Mother Company", "KAM Name", "BDM Name",
+              "Category Head /Team Lead Name", "Category")) %>%
+     dplyr::rename(ShopName = 'Shop Name', MotherCompany = 'Mother Company',
+                   KAM = 'KAM Name', BDM = 'BDM Name',
+                   CatHead = "Category Head /Team Lead Name")
 #commercialInfo <- commercialInfo[grepl("T10|Priority", ShopName, ignore.case = T), ]
 commercialInfo <- data.table(commercialInfo)
 commercialInfo$ShopName <- tolower(commercialInfo$ShopName)
@@ -36,22 +36,22 @@ corporateTrackerUrl <- read.csv("Data/Input Data/PaymentTrackers/CorporateTracke
 
 corporateTracker <- read_sheet(corporateTrackerUrl[1,3],
                                range = "Bill Submission Summary!A4:AR4", col_names = T, na = "") %>%
-                    select(c("Bill Serial No", "Campaign Name", "Payment Date", "Submitted Bill", "Approved Amount",
-                             "Amount", "Total Due for this bill")) %>%
-                    dplyr::rename(Serial = 'Bill Serial No', ShopName = 'Campaign Name',
-                                  PaymentDate = 'Payment Date', Submitted = 'Submitted Bill', Approved = 'Approved Amount',
-                                  Paid = 'Amount', Due = 'Total Due for this bill')
+     select(c("Bill Serial No", "Campaign Name", "Payment Date", "Submitted Bill", "Approved Amount",
+              "Amount", "Total Due for this bill")) %>%
+     dplyr::rename(Serial = 'Bill Serial No', ShopName = 'Campaign Name',
+                   PaymentDate = 'Payment Date', Submitted = 'Submitted Bill', Approved = 'Approved Amount',
+                   Paid = 'Amount', Due = 'Total Due for this bill')
 
 for (i in 1:length(corporateTrackerUrl$URL)) {
-                    temp <- read_sheet(corporateTrackerUrl[i,3],
-                                       range = "Bill Submission Summary!A4:AR", col_names = T, na = "") %>%
-                                        select(c("Bill Serial No", "Campaign Name", "Payment Date", "Submitted Bill", "Approved Amount",
-                                                 "Amount", "Total Due for this bill")) %>%
-                                        dplyr::rename(Serial = 'Bill Serial No', ShopName = 'Campaign Name',
-                                                      PaymentDate = 'Payment Date', Submitted = 'Submitted Bill', Approved = 'Approved Amount',
-                                                      Paid = 'Amount', Due = 'Total Due for this bill')
-                    temp <- temp[!is.na(temp$Submitted), ]
-                    corporateTracker <- rbind(corporateTracker, temp)}
+     temp <- read_sheet(corporateTrackerUrl[i,3],
+                        range = "Bill Submission Summary!A4:AR", col_names = T, na = "") %>%
+          select(c("Bill Serial No", "Campaign Name", "Payment Date", "Submitted Bill", "Approved Amount",
+                   "Amount", "Total Due for this bill")) %>%
+          dplyr::rename(Serial = 'Bill Serial No', ShopName = 'Campaign Name',
+                        PaymentDate = 'Payment Date', Submitted = 'Submitted Bill', Approved = 'Approved Amount',
+                        Paid = 'Amount', Due = 'Total Due for this bill')
+     temp <- temp[!is.na(temp$Submitted), ]
+     corporateTracker <- rbind(corporateTracker, temp)}
 
 corporateTracker$Serial <- as.character(corporateTracker$Serial)
 corporateTracker$ShopName <- as.character(corporateTracker$ShopName)
@@ -83,13 +83,13 @@ rm(file.list)
 # add month column, remove comma from last update time and add last update date column,
 
 sales <-  cbind(sales, "LastUpdatedate" = gsub(pattern = ",.*", "", sales$`Last Update`)) %>%
-                    dplyr::select(c("Invoice No", "Order Date", "Shop Name", "Order Status", "Order Items",
-                                    "Order Quantity", "Order Price", "Payment Method", "Note", "LastUpdatedate", "Payment Status")) %>%
-                    dplyr::rename(Invoice = 'Invoice No', OrderDate = 'Order Date', ShopName = 'Shop Name',
-                                  OrderStatus = 'Order Status', OrderItem = 'Order Items', PaymentMethod = 'Payment Method',
-                                  OrderQuantity = 'Order Quantity', unit.OrderPrice = 'Order Price', LastUpdate = 'Note',
-                                  PaymentStatus = 'Payment Status') %>%
-                    dplyr::filter(PaymentStatus == "paid")
+     dplyr::select(c("Invoice No", "Order Date", "Shop Name", "Order Status", "Order Items",
+                     "Order Quantity", "Order Price", "Payment Method", "Note", "LastUpdatedate", "Payment Status")) %>%
+     dplyr::rename(Invoice = 'Invoice No', OrderDate = 'Order Date', ShopName = 'Shop Name',
+                   OrderStatus = 'Order Status', OrderItem = 'Order Items', PaymentMethod = 'Payment Method',
+                   OrderQuantity = 'Order Quantity', unit.OrderPrice = 'Order Price', LastUpdate = 'Note',
+                   PaymentStatus = 'Payment Status') %>%
+     dplyr::filter(PaymentStatus == "paid")
 
 sales$unit.OrderPrice <- as.numeric(sales$unit.OrderPrice)
 sales$OrderQuantity <- as.numeric(sales$OrderQuantity)
@@ -103,12 +103,12 @@ sales$ShopName <- str_squish(sales$ShopName)
 ##common derivatives####
 #unique invoice sales data
 unqSales <- data.table(sales[!duplicated(sales$`Invoice`), ]) %>%
-                    cbind(count = 1)
+     cbind(count = 1)
 
 #unique shops in sales data
 unqShop <- data.table(unqSales[!duplicated(unqSales$ShopName), ]) %>%
-                    select(c("ShopName", "OrderDate")) %>%
-                    rename(CampaignDate = OrderDate)
+     select(c("ShopName", "OrderDate")) %>%
+     rename(CampaignDate = OrderDate)
 
 #add campaign date in the sales data
 sales <- data.table(merge(sales, unqShop, all = T))
@@ -121,8 +121,8 @@ salesProd <- lapply(file.list, read_excel) %>% bind_rows(.id = "id")
 
 #sales and product data
 salesProd <-  dplyr::select(salesProd, c("Shop Name", "Order Items", "Seller Price", '...25')) %>%
-                    dplyr::rename(ShopName = 'Shop Name', OrderItem = 'Order Items',
-                                  unit.mrp = 'Seller Price', unit.seller.price = '...25')
+     dplyr::rename(ShopName = 'Shop Name', OrderItem = 'Order Items',
+                   unit.mrp = 'Seller Price', unit.seller.price = '...25')
 
 salesProd <- mutate(salesProd, code = paste(ShopName, OrderItem, sep = ""))
 salesProd <- salesProd[!duplicated(salesProd$code), ] %>% select(-c("code"))
@@ -142,10 +142,10 @@ salesProd$unit.seller.price <- as.numeric(salesProd$unit.seller.price)
 prodFiles <- list.files("Data/Input Data/ProductData/New Product Data", pattern="*.csv", full.names = T)
 
 productData <- lapply(prodFiles, fread, sep = "\t", header = TRUE, data.table = TRUE) %>%
-                    bind_rows(.id = "id") %>%
-                    select(c('shop name', 'order item', 'seller price', 'mrp')) %>%
-                    rename(ShopName = 'shop name', OrderItem = 'order item',
-                           unit.seller.price = 'seller price', unit.mrp = 'mrp')
+     bind_rows(.id = "id") %>%
+     select(c('shop name', 'order item', 'seller price', 'mrp')) %>%
+     rename(ShopName = 'shop name', OrderItem = 'order item',
+            unit.seller.price = 'seller price', unit.mrp = 'mrp')
 
 rm(file.list, prodFiles)
 
@@ -159,28 +159,28 @@ productData <- rbind(productData, salesProd)
 productData <- mutate(productData, code = paste(ShopName, OrderItem, sep = ""))
 productData <- productData[!duplicated(productData$code), ] %>% select(-c("code"))
 
-evalyPrice <- evalyPrice[!grepl('for t10 july 30', ShopName) & !grepl('for t10 july 23', ShopName), ]
+ePrice <- ePrice[!grepl('for t10 july 30', ShopName) & !grepl('for t10 july 23', ShopName), ]
 
-evalyPrice <- merge(sales, productData, all.x = T, all.y = F, by = c("ShopName", "OrderItem")) %>%
-                    group_by(ShopName, OrderItem) %>%
-                    mutate(itemCount = row_number()) %>%
-                    filter(itemCount == 1) %>%
-                    select(c("ShopName", "OrderItem", "unit.OrderPrice", "unit.seller.price",
-                             "unit.mrp"))
+ePrice <- merge(sales, productData, all.x = T, all.y = F, by = c("ShopName", "OrderItem")) %>%
+     group_by(ShopName, OrderItem) %>%
+     mutate(itemCount = row_number()) %>%
+     filter(itemCount == 1) %>%
+     select(c("ShopName", "OrderItem", "unit.OrderPrice", "unit.seller.price",
+              "unit.mrp"))
 
 tempProd <- read.csv("Data/Input Data/ProductData/T102330.csv") %>%
-                    rename(ShopName = 'ï..ShopName')
+     rename(ShopName = 'ï..ShopName')
 
-evalyPrice <- rbind(evalyPrice, tempProd)
+ePrice <- rbind(ePrice, tempProd)
 
-evalyPrice$unit.OrderPrice <- as.numeric(evalyPrice$unit.OrderPrice)
-evalyPrice$unit.seller.price <- as.numeric(evalyPrice$unit.seller.price)
-evalyPrice$unit.mrp <- as.numeric(evalyPrice$unit.mrp)
+ePrice$unit.OrderPrice <- as.numeric(ePrice$unit.OrderPrice)
+ePrice$unit.seller.price <- as.numeric(ePrice$unit.seller.price)
+ePrice$unit.mrp <- as.numeric(ePrice$unit.mrp)
 
-evalyPrice <- filter(evalyPrice, unit.mrp > 0)
-evalyPrice <- filter(evalyPrice, unit.seller.price > 0)
-evalyPrice <- filter(evalyPrice, unit.OrderPrice > 0)
-evalyPrice <- filter(evalyPrice, unit.mrp >= unit.seller.price)
+ePrice <- filter(ePrice, unit.mrp > 0)
+ePrice <- filter(ePrice, unit.seller.price > 0)
+ePrice <- filter(ePrice, unit.OrderPrice > 0)
+ePrice <- filter(ePrice, unit.mrp >= unit.seller.price)
 
 #shop-item merge - shop specific info (campaign date), item status, price info, commercial info, delivery time info
 
@@ -201,7 +201,7 @@ InvoiceStatus <- merge(merge(merge(merge(merge(totalInv, processingInv, all = T)
                                    deliveredInv, all = T),
                              refundedInv, all = T),
                        undeliveredInv, all = T) %>%
-                    mutate(refundRatio = Refunded.Invoice/Total.Invoice)
+     mutate(refundRatio = Refunded.Invoice/Total.Invoice)
 
 
 #Order status, month, shop, item wise item count. All can take about 20 minutes.
@@ -222,14 +222,14 @@ ItemStatus <- merge(merge(merge(merge(merge(total, processing, all = T),
 
 #last date difference
 shopDelivery <- dplyr::filter(sales, OrderStatus == 'shipped' | OrderStatus == 'delivered') %>%
-                    dplyr::filter(!grepl("refund", LastUpdate, ignore.case = T)) %>%
-                    mutate(deliDays = dmy(LastUpdatedate) - mdy(CampaignDate))
+     dplyr::filter(!grepl("refund", LastUpdate, ignore.case = T)) %>%
+     mutate(deliDays = dmy(LastUpdatedate) - mdy(CampaignDate))
 shopDelivery <- shopDelivery[, .(shopItemDeliTime = sum(deliDays, na.rm = T)), by = .(ShopName, OrderItem)]
 
 shopDelivery$shopItemDeliTime <- as.numeric(shopDelivery$shopItemDeliTime, units="days")
 
 #Nagad impact: prior to 16/7 10% up to 2000
-nagad <- merge((select(sales, -c("unit.OrderPrice"))), evalyPrice, all = F, by = c("ShopName", "OrderItem"))
+nagad <- merge((select(sales, -c("unit.OrderPrice"))), ePrice, all = F, by = c("ShopName", "OrderItem"))
 nagad <- nagad[grepl("nagad", PaymentMethod, ignore.case = T),
                .(NagadDiscountValue =  sum(ifelse((OrderQuantity*unit.OrderPrice*0.1)>2000,
                                                   2000, (OrderQuantity * unit.OrderPrice * .1)),
@@ -238,45 +238,45 @@ nagad <- nagad[grepl("nagad", PaymentMethod, ignore.case = T),
 
 shopItemReport <- merge(merge(merge(merge(merge(merge(merge(unqShop, CorporateSellerPayment, all.x = T, all.y = F, by = c("ShopName")),
                                                       ItemStatus, all = F, by = c("ShopName")),
-                                                evalyPrice, all = F, by = c("ShopName", "OrderItem")),
+                                                ePrice, all = F, by = c("ShopName", "OrderItem")),
                                           commercialInfo, all.x = T, all.y = F, by = c("ShopName")),
                                     shopDelivery, all.x = T, all.y = F, by = c("ShopName", "OrderItem")),
                               InvoiceStatus, all = F, by = c("ShopName", "OrderItem")),
                         nagad, all.x = T, all.y = F, by = c("ShopName", "OrderItem")) %>%
-                    mutate(TotalOrderValue = Total.Quantity * unit.OrderPrice,
-                           ProcessingValue = Processing.Quantity * unit.OrderPrice,
-                           PickedValue = Picked.Quantity * unit.OrderPrice,
-                           Delivered.And.Shipped.Value = Delivered.And.Shipped.Quantity * unit.OrderPrice,
-                           Undelivered.Value = Undelivered.Quantity * unit.OrderPrice,
-                           refundValue = Refunded.Quantity*unit.seller.price,
-                           
-                           TotalMarketValue = Total.Quantity * unit.mrp,
-                           
-                           TotalSellerPrice = Total.Quantity * unit.seller.price,
-                           ProcessingSellerPrice = Processing.Quantity * unit.seller.price,
-                           PickedSellerPrice = Picked.Quantity * unit.seller.price,
-                           Delivered.And.Shipped.SellerPrice = Delivered.And.Shipped.Quantity * unit.seller.price,
-                           Undelivered.SellerPrice = Undelivered.Quantity * unit.seller.price,
-                           
-                           comissionValue = (unit.mrp-unit.seller.price)*Total.Quantity, 
-                           discountValue = (unit.mrp - unit.OrderPrice)*Total.Quantity,
-                           burnValue = (unit.seller.price - unit.OrderPrice)*Total.Quantity) %>%
-                    cbind(count = 1)
+     mutate(TotalOrderValue = Total.Quantity * unit.OrderPrice,
+            ProcessingValue = Processing.Quantity * unit.OrderPrice,
+            PickedValue = Picked.Quantity * unit.OrderPrice,
+            Delivered.And.Shipped.Value = Delivered.And.Shipped.Quantity * unit.OrderPrice,
+            Undelivered.Value = Undelivered.Quantity * unit.OrderPrice,
+            refundValue = Refunded.Quantity*unit.seller.price,
+            
+            TotalMarketValue = Total.Quantity * unit.mrp,
+            
+            TotalSellerPrice = Total.Quantity * unit.seller.price,
+            ProcessingSellerPrice = Processing.Quantity * unit.seller.price,
+            PickedSellerPrice = Picked.Quantity * unit.seller.price,
+            Delivered.And.Shipped.SellerPrice = Delivered.And.Shipped.Quantity * unit.seller.price,
+            Undelivered.SellerPrice = Undelivered.Quantity * unit.seller.price,
+            
+            comissionValue = (unit.mrp-unit.seller.price)*Total.Quantity, 
+            discountValue = (unit.mrp - unit.OrderPrice)*Total.Quantity,
+            burnValue = (unit.seller.price - unit.OrderPrice)*Total.Quantity) %>%
+     cbind(count = 1)
 
 shopItemReport <- data.table(shopItemReport)
 cost <- shopItemReport[, .(Cost = sum(Delivered.And.Shipped.SellerPrice, Undelivered.SellerPrice, refundValue, na.rm = T)),
                        by = .(ShopName, OrderItem)]
 
 shopItemReport <- merge(shopItemReport, cost, by = c("ShopName", "OrderItem")) %>%
-                    mutate(Month = month(mdy(CampaignDate)),
-                           Week = week(mdy(CampaignDate)),
-                           
-                           comissionRate = (TotalMarketValue - TotalSellerPrice)/TotalMarketValue,
-                           burnRate = (TotalSellerPrice - (TotalOrderValue-NagadDiscountValue))/TotalMarketValue,
-                           discountRate = (TotalMarketValue - (TotalOrderValue-NagadDiscountValue))/TotalMarketValue,
-                           
-                           costRatio = Cost/TotalOrderValue,
-                           avgDeliTime = shopItemDeliTime/Delivered.And.Shipped.Inv)
+     mutate(Month = month(mdy(CampaignDate)),
+            Week = week(mdy(CampaignDate)),
+            
+            comissionRate = (TotalMarketValue - TotalSellerPrice)/TotalMarketValue,
+            burnRate = (TotalSellerPrice - (TotalOrderValue-NagadDiscountValue))/TotalMarketValue,
+            discountRate = (TotalMarketValue - (TotalOrderValue-NagadDiscountValue))/TotalMarketValue,
+            
+            costRatio = Cost/TotalOrderValue,
+            avgDeliTime = shopItemDeliTime/Delivered.And.Shipped.Inv)
 
 shopItemReport <- shopItemReport[!is.na(shopItemReport$ShopName), ]
 shopItemReport <- shopItemReport[!is.na(shopItemReport$Total.Quantity), ]
@@ -318,20 +318,20 @@ shopItemReport <- fread("Data/Output Data/CommercialReport/ShopItemReport.csv")
 
 #T10 campaign comparison
 campaign1 <- shopItemReport[grepl('for t10 july 2', ShopName) & !grepl('for t10 july 23', ShopName), ] %>%
-                     cbind(CampaignName = c("T10 July 2"))
+     cbind(CampaignName = c("T10 July 2"))
 campaign2 <- shopItemReport[grepl('for t10 july 9 2021', ShopName), ] %>%
-                     cbind(CampaignName = c("T10 July 9"))
+     cbind(CampaignName = c("T10 July 9"))
 campaign3 <- shopItemReport[grepl('for t10 july 16', ShopName), ] %>%
-                     cbind(CampaignName = c("T10 July 16"))
+     cbind(CampaignName = c("T10 July 16"))
 campaign4 <- shopItemReport[grepl('for t10 july 23', ShopName), ] %>%
-                     cbind(CampaignName = c("T10 July 23"))
+     cbind(CampaignName = c("T10 July 23"))
 campaign5 <- shopItemReport[grepl('for t10 july 30', ShopName), ] %>%
-                     cbind(CampaignName = c("T10 July 30"))
+     cbind(CampaignName = c("T10 July 30"))
 
 shopItemReport <- merge(merge(merge(merge(campaign1, campaign2, all = T),
-                                     campaign3, all = T),
-                               campaign4, all = T),
-                         campaign5, all = T)
+                                    campaign3, all = T),
+                              campaign4, all = T),
+                        campaign5, all = T)
 
 #priority
 #shopItemReport <- shopItemReport[grepl('for priority', ShopName), ]
@@ -344,13 +344,13 @@ TotalValue <- shopItemReport[,.(TotalValue = sum(TotalOrderValue, na.rm = T)),
                              #by = .(Category, BDM, KAM, MotherCompany, Week)] # weekly mother company
                              #by = .(Category, BDM, KAM, MotherCompany, CampaignName)] # Campaign MC Comparison
                              by = .(CampaignName)] # Campaign Comparison
-                             #by = .(Category, BDM, KAM, Month)] # monthly kam report
-                             #by = .(Category, BDM, Month)] #monthly BDM
-                             #by = .(Category)] #overall category
-                             #by = .(Category, Month)] #monthly category
-                             #by = .(Category, Week)] #weekly category
-                             #by = .(Month)] #overall monthly
-                             #] #overall company
+#by = .(Category, BDM, KAM, Month)] # monthly kam report
+#by = .(Category, BDM, Month)] #monthly BDM
+#by = .(Category)] #overall category
+#by = .(Category, Month)] #monthly category
+#by = .(Category, Week)] #weekly category
+#by = .(Month)] #overall monthly
+#] #overall company
 
 shopItemReport <- merge(shopItemReport, TotalValue, all = T,
                         #by = c("Category", "BDM", "KAM", "MotherCompany")) # monthless mother company
@@ -358,12 +358,12 @@ shopItemReport <- merge(shopItemReport, TotalValue, all = T,
                         #by = c("Category", "BDM", "KAM", "MotherCompany", "Week")) # weekly mother company
                         #by = c("Category", "BDM", "KAM", "MotherCompany", "CampaignName")) #campaign MC comparison
                         by = c("CampaignName")) #campaign comparison
-                        #by = c("Category", "BDM", "KAM", "Month")) # monthly kam report
-                        #by = c("Category", "BDM", "Month")) #monthly BDM
-                        #by = c("Category")) #overall category
-                        #by = c("Category", "Month")) #monthly category
-                        #by = c("Category", "Week")) #weekly category
-                        #by = c("Month")) #overall monthly
+#by = c("Category", "BDM", "KAM", "Month")) # monthly kam report
+#by = c("Category", "BDM", "Month")) #monthly BDM
+#by = c("Category")) #overall category
+#by = c("Category", "Month")) #monthly category
+#by = c("Category", "Week")) #weekly category
+#by = c("Month")) #overall monthly
 
 #shopItemReport <- cbind(shopItemReport, TotalValue) #for overall company
 
@@ -401,13 +401,13 @@ Report <- shopItemReport[, .(TotalInvoice = sum(Total.Invoice, na.rm = T),
                          #by = .(Category, BDM, KAM, MotherCompany, Week)] # weekly mother company
                          #by = .(Category, BDM, KAM, MotherCompany, CampaignName)] # Campaign MC Comparison
                          by = .(CampaignName)] # Campaign Comparison
-                         #by = .(Category, BDM, KAM, Month)] # monthly kam report
-                         #by = .(Category, BDM, Month)] #monthly BDM
-                         #by = .(Category)] #overall category
-                         #by = .(Category, Month)] #monthly category
-                         #by = .(Category, Week)] #weekly category
-                         #by = .(Month)] #overall monthly
-                         #] #overall company
+#by = .(Category, BDM, KAM, Month)] # monthly kam report
+#by = .(Category, BDM, Month)] #monthly BDM
+#by = .(Category)] #overall category
+#by = .(Category, Month)] #monthly category
+#by = .(Category, Week)] #weekly category
+#by = .(Month)] #overall monthly
+#] #overall company
 
 
 Report <- mutate(Report,
@@ -422,20 +422,20 @@ Report <- mutate(Report,
 
 
 Report <- Report[, c(#"Category", "BDM", "KAM", "MotherCompany", "Month", "Week", "CampaignName",
-                    "CampaignName",
-                    "TotalInvoice", "ProcessingInvoice", "PickedInvoice", "DeliveredAndShippedInvoice" , "RefundedInvoice",
-                    
-                    "Revenue", "Delivered.And.Shipped.Value", "UndeliveredValue", "Cost",
-                    
-                    "Delivered.And.Shipped.SellerPrice", "Undelivered.SellerPrice",
-                    
-                    "TotalMarketValue", "TotalSellerPrice", "NagadDiscountValue",
-                    
-                    "avgComissionRate", "avgBurnRate", "avgDiscountRate",
-                    
-                    "creditPerformance", "avgRefundRatio", "avgDeliTime", "avgCostRatio",
-                    
-                    "Submitted", "Approved", "Paid", "Due")]
+     "CampaignName",
+     "TotalInvoice", "ProcessingInvoice", "PickedInvoice", "DeliveredAndShippedInvoice" , "RefundedInvoice",
+     
+     "Revenue", "Delivered.And.Shipped.Value", "UndeliveredValue", "Cost",
+     
+     "Delivered.And.Shipped.SellerPrice", "Undelivered.SellerPrice",
+     
+     "TotalMarketValue", "TotalSellerPrice", "NagadDiscountValue",
+     
+     "avgComissionRate", "avgBurnRate", "avgDiscountRate",
+     
+     "creditPerformance", "avgRefundRatio", "avgDeliTime", "avgCostRatio",
+     
+     "Submitted", "Approved", "Paid", "Due")]
 
 write.csv(Report, "Data/Output Data/CommercialReport/T10.csv")#WhatReport.csv")
 
